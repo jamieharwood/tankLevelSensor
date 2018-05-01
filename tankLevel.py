@@ -16,7 +16,14 @@ neoLow = 0
 neoMid = 64
 neoHi = 255
 
-functionStateChanged = False
+red = (neoMid, neoLow, neoLow)
+yellow = (255, 226, neoLow)
+tango = (243, 114, 82)
+green = (neoLow, neoMid, neoLow)
+indigo = (neoLow, 126, 135)
+blue = (neoLow, neoLow, neoMid)
+purple = (neoMid, neoLow, neoMid)
+black = (neoLow, neoLow, neoLow)
 
 
 def main():
