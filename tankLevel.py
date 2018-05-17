@@ -11,12 +11,14 @@ import network
 import machine
 import utime
 import varibles as vars
-import neopixel
 import urequests
 import ubinascii
 from heartbeatClass import HeartBeat
 from timeClass import TimeTank
 from SensorRegistationClass import SensorRegistation
+from NeoPixelClass import NeoPixel
+
+restHost = "http://192.168.86.240:5000"
 
 level1Pin = Pin(4, Pin.IN, Pin.PULL_UP)  # D3
 level2Pin = Pin(0, Pin.IN, Pin.PULL_UP)  # D4
@@ -24,19 +26,9 @@ level3Pin = Pin(5, Pin.IN, Pin.PULL_UP)  # D4
 
 numSensors = 3
 
-np = neopixel.NeoPixel(Pin(12), 4)
-neoLow = 0
-neoMid = 64
-neoHi = 255
+neoPin = 12
 
-red = (neoMid, neoLow, neoLow)
-yellow = (255, 226, neoLow)
-tango = (243, 114, 82)
-green = (neoLow, neoMid, neoLow)
-indigo = (neoLow, 126, 135)
-blue = (neoLow, neoLow, neoMid)
-purple = (neoMid, neoLow, neoMid)
-black = (neoLow, neoLow, neoLow)
+np = NeoPixel(neoPin, 4)
 
 powerLed = 3
 level1 = 2
@@ -44,10 +36,10 @@ level2 = 1
 level3 = 0
 
 # Set initial state
-np[powerLed] = red
-np[level1] = purple
-np[level2] = purple
-np[level3] = purple
+np.colour(powerLed, 'red')
+np.colour(level1, 'purple')
+np.colour(level2, 'purple')
+np.colour(level3, 'purple')
 np.write()
 
 
@@ -86,14 +78,15 @@ def main():
 
     deviceid = getdeviceid()
 
-    mySensorRegistation = SensorRegistation(deviceid)
+    mySensorRegistation = SensorRegistation(restHost, deviceid)
     mySensorRegistation.register(sensorname, 'Hardware', 'JH')
 
-    myheartbeat = HeartBeat(deviceid)
+    myheartbeat = HeartBeat(restHost, deviceid)
     myheartbeat.beat()
 
     mytime = TimeTank(deviceid)
-    mytime.settime(1)
+    while not mytime.settime():
+        pass
 
     rtc = RTC()
     sampletimes = [1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56]
@@ -108,9 +101,9 @@ def main():
     # Set initial state
     for sensor in range(0, numSensors):
         if vars.levels[sensor]:
-            np[sensor] = purple
+            np.colour(sensor, 'purple')
         else:
-            np[sensor] = green
+            np.colour(sensor, 'green')
 
     np.write()
 
@@ -141,7 +134,8 @@ def main():
         if currHour in samplehours and gethour == 1:
             gethour = 0
             local = utime.localtime()
-            mytime.settime(1)
+            while not mytime.settime():
+                pass
 
         # Read switch inputs
         vars.levels = [level1Pin.value(), level2Pin.value(), level3Pin.value()]
@@ -154,10 +148,10 @@ def main():
                 sensorValue += 1
 
         for sensor in range(0, numSensors):  # reset to low.
-            np[sensor] = purple
+            np.colour(sensor, 'purple')
 
         for sensor in range(0, sensorValue):  # Set actual value.
-            np[sensor] = green
+            np.colour(sensor, 'green')
 
         np.write()
 
