@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""
+Trilby Tanks 2018 copyright
+Module: NeoPixel
+"""
+
 import neopixel
 from machine import Pin
 
